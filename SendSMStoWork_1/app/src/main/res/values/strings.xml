@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">SendSMStoWork_1</string>
+    <string name="ssid_rotulo">SSID</string>
+    <string name="ssid_hint">Digite o SSID</string>
+    <string name="data_rotulo">Data do último envio</string>
+    <string name="salvar_ssid">Salvar SSID</string>
+</resources>
