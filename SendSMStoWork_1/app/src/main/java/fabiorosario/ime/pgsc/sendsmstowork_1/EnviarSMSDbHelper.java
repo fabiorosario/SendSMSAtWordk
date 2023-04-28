@@ -43,13 +43,12 @@ public class EnviarSMSDbHelper extends SQLiteOpenHelper {
     private static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + EnviarSMSContrato.EsquemaBD.TABLE_NAME;
 
-    public static Boolean atualizarSSID(SQLiteOpenHelper dbHelper, String idSSID, String ssid){
+    public static Boolean atualizarSSID(SQLiteOpenHelper dbHelper, String idSSID, String ssid, Date data){
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        MainActivity.dataUltimoEnvioSMS = new Date(1);
         ContentValues values = new ContentValues();
         values.put(EnviarSMSContrato.EsquemaBD.COLUMN_NAME_SSID, ssid);
-        values.put(EnviarSMSContrato.EsquemaBD.COLUMN_NAME_DATA, MainActivity.dataUltimoEnvioSMS.getTime());
+        values.put(EnviarSMSContrato.EsquemaBD.COLUMN_NAME_DATA, data.getTime());
 
         int quantidadeAtualizacoes = 0;
         long quantidadeInsercoes = 0;

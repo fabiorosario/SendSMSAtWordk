@@ -19,6 +19,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -53,8 +54,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String ssid = editTextSSID.getText().toString();
-                if (EnviarSMSDbHelper.atualizarSSID(dbHelper, idSSID, ssid)){
+                Date data = new Date(1);
+                if (EnviarSMSDbHelper.atualizarSSID(dbHelper, idSSID, ssid, data)){
                     Toast.makeText(MainActivity.this, "Atualização do SSID realizada!", Toast.LENGTH_SHORT).show();
+                    dataUltimoEnvioSMS = data;
                     textViewData.setText(dataUltimoEnvioSMS.toString());
                 }
                 else
@@ -63,9 +66,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_CONTACTS, Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.SEND_SMS,
-                        Manifest.permission.RECEIVE_BOOT_COMPLETED},
+                new String[]{Manifest.permission.READ_CONTACTS, Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.SEND_SMS,
+                        Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
                 PackageManager.PERMISSION_GRANTED);
 
         pedirPermissaoUsarLocalizacaoSegundoPlano();

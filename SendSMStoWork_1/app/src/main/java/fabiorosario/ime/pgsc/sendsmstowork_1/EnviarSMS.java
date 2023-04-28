@@ -2,6 +2,8 @@ package fabiorosario.ime.pgsc.sendsmstowork_1;
 
 
 import android.Manifest;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -47,8 +49,8 @@ public class EnviarSMS extends Service {
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
-                    if (enviarSMSContatos())
-                        stopSelf(startId);
+                    enviarSMSContatos();
+                    //  stopSelf(startId);
                 }
             };
             Thread t = new Thread(runnable);
