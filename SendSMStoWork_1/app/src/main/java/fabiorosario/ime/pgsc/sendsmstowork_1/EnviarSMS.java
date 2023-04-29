@@ -16,7 +16,6 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.provider.ContactsContract;
 import android.telephony.SmsManager;
-import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 import java.util.ArrayList;
@@ -29,17 +28,19 @@ public class EnviarSMS extends Service {
     long data;
     Calendar dataEnvioSMS;
     private EnviarSMSDbHelper dbHelper;
-    private final IBinder mBinder = new EnviarSMS.MyBinder();
-    public class MyBinder extends Binder {
-        EnviarSMS getService(){
-            return EnviarSMS.this;
-        }
-    }
 
+    public EnviarSMS() {
+    }
     @Override
     public void onCreate(){
         dbHelper = EnviarSMSDbHelper.getDbHelper(getApplicationContext());
         super.onCreate();
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        // TODO: Return the communication channel to the service.
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
@@ -50,21 +51,13 @@ public class EnviarSMS extends Service {
                 @Override
                 public void run() {
                     enviarSMSContatos();
-                    //  stopSelf(startId);
+                    stopSelf(startId);
                 }
             };
             Thread t = new Thread(runnable);
             t.start();
         }
         return Service.START_STICKY;
-    }
-
-    public EnviarSMS() {
-    }
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        return mBinder;
     }
 
     void inicializarVariaveis(){
@@ -76,7 +69,9 @@ public class EnviarSMS extends Service {
         dataEnvioSMS = Calendar.getInstance();
         Calendar dataBD = Calendar.getInstance();
         dataBD.setTime(new Date(data));
-        if (dataEnvioSMS.get(Calendar.DAY_OF_MONTH) != dataBD.get(Calendar.DAY_OF_MONTH))
+        if ((dataEnvioSMS.get(Calendar.DAY_OF_MONTH) != dataBD.get(Calendar.DAY_OF_MONTH) ||
+                dataEnvioSMS.get(Calendar.MONTH) != dataBD.get(Calendar.MONTH) ||
+                dataEnvioSMS.get(Calendar.YEAR) != dataBD.get(Calendar.YEAR)))
             return true;
         return false;
     }
@@ -90,7 +85,7 @@ public class EnviarSMS extends Service {
             }
             List<ScanResult> listResult = (List<ScanResult>) wifiManager.getScanResults();
             for (ScanResult result : listResult){
-                if (ssid != null && result.SSID.contains(ssid)){
+                if (ssid != null && result.SSID.equals(ssid)){
                     retorno = true;
                     break;
                 }

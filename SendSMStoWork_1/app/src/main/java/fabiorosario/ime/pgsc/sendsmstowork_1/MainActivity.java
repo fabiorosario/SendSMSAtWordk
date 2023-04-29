@@ -3,23 +3,15 @@ package fabiorosario.ime.pgsc.sendsmstowork_1;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
-import android.app.Activity;
-import android.app.AlarmManager;
 import android.app.AlertDialog;
-import android.app.PendingIntent;
 import android.content.ComponentName;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,18 +19,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.Manifest;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.Calendar;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
     ReceptorIdentificacaoWifi receptorIdentificacaoWifi;
+    Intent serviceSendBroadcast;
     EnviarSMSDbHelper dbHelper;
     EditText editTextSSID;
     TextView textViewData;
     String idSSID = "";
-    public static Date dataUltimoEnvioSMS;
+    Date dataUltimoEnvioSMS;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,9 +62,20 @@ public class MainActivity extends AppCompatActivity {
 
         pedirPermissaoUsarLocalizacaoSegundoPlano();
 
-        IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-        filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+        IntentFilter filter = new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+        filter.addAction("fabiorosario.ime.pgsc.sendsmstowork.MY_ACTION");
         registerReceiver(receptorIdentificacaoWifi, filter);
+
+        Context context = getBaseContext();
+        serviceSendBroadcast = new Intent(context, ServiceSendBroadcast.class);
+        serviceSendBroadcast.setFlags(Intent.FLAG_EXCLUDE_STOPPED_PACKAGES);
+        context.startService(serviceSendBroadcast);
+
+        ComponentName receiver = new ComponentName(context, BootReceiver.class);
+        PackageManager pm = context.getPackageManager();
+        pm.setComponentEnabledSetting(receiver,
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP);
     }
 
     @Override
@@ -89,8 +90,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop(){
+        super.onStop();
+    }
+
+    @Override
     protected void onDestroy(){
         super.onDestroy();
+        stopService(serviceSendBroadcast);
         unregisterReceiver(receptorIdentificacaoWifi);
     }
 
