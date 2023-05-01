@@ -2,20 +2,19 @@ package fabiorosario.ime.pgsc.sendsmstowork_1;
 
 
 import android.Manifest;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
-import android.os.Binder;
 import android.os.IBinder;
 import android.provider.ContactsContract;
 import android.telephony.SmsManager;
+import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 import java.util.ArrayList;
@@ -23,18 +22,31 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-public class EnviarSMS extends Service {
+public class EnviarSMSService extends Service {
     String ssid;
     long data;
     Calendar dataEnvioSMS;
     private EnviarSMSDbHelper dbHelper;
+    EnviarSMSReceiver enviarSMSReceiver;
+    Intent enviarBroadcastService;
 
-    public EnviarSMS() {
+    public EnviarSMSService() {
     }
     @Override
     public void onCreate(){
-        dbHelper = EnviarSMSDbHelper.getDbHelper(getApplicationContext());
         super.onCreate();
+
+        dbHelper = EnviarSMSDbHelper.getDbHelper(getApplicationContext());
+
+        enviarSMSReceiver = new EnviarSMSReceiver();
+        IntentFilter filter = new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+        filter.addAction("fabiorosario.ime.pgsc.sendsmstowork.MY_ACTION");
+        registerReceiver(enviarSMSReceiver, filter);
+
+        enviarBroadcastService = new Intent(getBaseContext(), EnviarBroadcastService.class);
+        enviarBroadcastService.setFlags(Intent.FLAG_FROM_BACKGROUND);
+        startService(enviarBroadcastService);
+
     }
 
     @Override
@@ -59,7 +71,14 @@ public class EnviarSMS extends Service {
         }
         return Service.START_STICKY;
     }
-
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        if (dbHelper != null)
+            dbHelper.close();
+        stopService(enviarBroadcastService);
+        unregisterReceiver(enviarSMSReceiver);
+    }
     void inicializarVariaveis(){
         String info[] = EnviarSMSDbHelper.informacoesEnvioSMS(dbHelper);
         ssid = info[1];
@@ -80,7 +99,8 @@ public class EnviarSMS extends Service {
         Context context = getApplicationContext();
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         if (wifiManager != null){
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
                 retorno = false;
             }
             List<ScanResult> listResult = (List<ScanResult>) wifiManager.getScanResults();
@@ -99,7 +119,8 @@ public class EnviarSMS extends Service {
 
         ArrayList<String> contatos = buscarContatos();
         for (String contato : contatos){
-            sms.sendTextMessage(contato, null, "Oi, cheguei no trabalho!", null, null);
+            sms.sendTextMessage(contato, null, "Oi, cheguei no trabalho!",
+                    null, null);
             ok = true;
         }
 
@@ -128,10 +149,4 @@ public class EnviarSMS extends Service {
         return contatos;
     }
 
-    @Override
-    public void onDestroy(){
-        if (dbHelper != null)
-            dbHelper.close();
-        super.onDestroy();
-    }
 }

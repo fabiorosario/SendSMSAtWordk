@@ -34,7 +34,6 @@ public class EnviarSMSDbHelper extends SQLiteOpenHelper {
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         onUpgrade(db, oldVersion, newVersion);
     }
-
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + EnviarSMSContrato.EsquemaBD.TABLE_NAME + " (" +
                     EnviarSMSContrato.EsquemaBD._ID + " INTEGER PRIMARY KEY," +
@@ -62,9 +61,8 @@ public class EnviarSMSDbHelper extends SQLiteOpenHelper {
                     selection,
                     selectionArgs);
         }
-        else{
+        else
             quantidadeInsercoes = db.insert(EnviarSMSContrato.EsquemaBD.TABLE_NAME, null, values);
-        }
 
         if (quantidadeAtualizacoes > 0 || quantidadeInsercoes > 0)
             return true;
