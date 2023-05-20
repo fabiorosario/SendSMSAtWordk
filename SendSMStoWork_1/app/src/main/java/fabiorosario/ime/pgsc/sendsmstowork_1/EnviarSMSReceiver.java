@@ -11,8 +11,12 @@ public class EnviarSMSReceiver extends BroadcastReceiver {
         String acao = intent.getAction();
         if(acao.equals("fabiorosario.ime.pgsc.sendsmstowork.MY_ACTION") ||
                 acao.equals("android.net.wifi.STATE_CHANGE")){
-            Intent enviarSMS = new Intent(context, EnviarSMSService.class);
-            context.startService(enviarSMS);
+            try{
+                Intent enviarSMS = new Intent(context, EnviarSMSService.class);
+                context.startService(enviarSMS);
+            }catch(Exception e){
+
+            }
         }
     }
 }

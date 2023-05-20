@@ -43,10 +43,13 @@ public class EnviarSMSService extends Service {
         filter.addAction("fabiorosario.ime.pgsc.sendsmstowork.MY_ACTION");
         registerReceiver(enviarSMSReceiver, filter);
 
-        enviarBroadcastService = new Intent(getBaseContext(), EnviarBroadcastService.class);
-        enviarBroadcastService.setFlags(Intent.FLAG_FROM_BACKGROUND);
-        startService(enviarBroadcastService);
+        try {
+            enviarBroadcastService = new Intent(getBaseContext(), EnviarBroadcastService.class);
+            enviarBroadcastService.setFlags(Intent.FLAG_FROM_BACKGROUND);
+            startService(enviarBroadcastService);
+        }catch (Exception e){
 
+        }
     }
 
     @Override
@@ -58,6 +61,7 @@ public class EnviarSMSService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         inicializarVariaveis();
+        Log.e("EnviarSMSService", "onStartCommand");
         if (aptoEnviarSMS() && chegouTrabalho()) {
             Runnable runnable = new Runnable() {
                 @Override
